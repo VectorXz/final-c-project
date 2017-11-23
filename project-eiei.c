@@ -16,6 +16,11 @@ struct card{
 struct card info[100];
 struct card login_session;
 
+////////////////////////////////////////////////
+////            UTILITIES FUNCTION          ////
+////////////////////////////////////////////////
+
+//// CALL MAIN MENU
 void mainmenu() {
     char choice;
     printf("=======================\n");
@@ -53,6 +58,7 @@ void mainmenu() {
         mainmenu();
     }
 }
+
 //// Check num or char
 int isallnum(char id[]) {
     int size = strlen(id);
@@ -96,6 +102,7 @@ int is_email(char email[]) {
         return 0;
     }
 }
+
 //// Count how many data in file data.txt
 int count_data() {
     FILE *fp;
@@ -110,6 +117,115 @@ int count_data() {
     return num;
 }
 
+//// LOAD DATA FROM FILE AND KEEP IN Array "info" with structures card
+int load_data() {
+    int i=0;
+    FILE *fp;
+    int data = count_data();
+
+    fp = fopen("data.txt", "r");
+    char buffer[255];
+
+    while (fgets(buffer, 255, fp) != NULL) {
+    //printf("%s", buffer);
+    sscanf(buffer,"%d,%[^,],%[^,],%[^,],%10[^,],%[^,],%[^,],",&info[i].index,info[i].id,info[i].firstname,info[i].lastname,info[i].phone,info[i].email,info[i].password);
+    i++;
+    }
+
+    fclose(fp);
+    return 0;
+}
+
+//// Check role of the user that Admin or Student
+int check_role(char id[]) {
+    int size = strlen(id);
+    int i=0;
+    char tmp[size];
+    while(id[i] != '\0') {
+        tmp[i] = id[i];
+        i++;
+    }
+    if(tmp[0] == '0' && tmp[1] == '0') {
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+//// Function that call when user exit the program
+void exitout()
+{
+    printf("**************        *****           *****       *****************\n");
+    printf("***************        *****         *****        *****************\n");
+    printf("****        ****        *****       *****         *****************\n");
+    printf("****        ****         *****     *****          ******\n");
+    printf("****        ****          *****   *****           ******\n");
+    printf("****        ****           ***** *****            ******\n");
+    printf("***************             *********             *****************\n");
+    printf("***************             *********             *****************\n");
+    printf("****        ****            *********             ******\n");
+    printf("****        ****            *********             ******\n");
+    printf("****        ****            *********             ******\n");
+    printf("****        ****            *********             *****************\n");
+    printf("***************             *********             *****************\n");
+    printf("**************              *********             *****************\n");
+}
+
+//// CLEAR THE VALUE THAT KEPT WHEN USER LOGGED IN
+void syslogout() {
+    login_session.index = 999;
+    strcpy(login_session.id,"\0");
+    strcpy(login_session.firstname,"\0");
+    strcpy(login_session.lastname,"\0");
+    strcpy(login_session.phone,"\0");
+    strcpy(login_session.email,"\0");
+    strcpy(login_session.password,"\0");
+    /*printf("%d\n",login_session.index);
+    printf("%s\n",login_session.id);
+    printf("%s\n",login_session.firstname);
+    printf("%s\n",login_session.lastname);
+    printf("%s\n",login_session.phone);
+    printf("%s\n",login_session.email);
+    printf("%s\n",login_session.password);*/
+    printf("Logged out!\n\n");
+    mainmenu();
+}
+
+//// Check that does user exist in the system or not
+int check_user_exists(char id[8]) {
+    load_data();
+    int total_data = count_data();
+    int i;
+    for(i=0;i<total_data;i++) {
+        int cmp = strcmp(id,info[i].id);
+        if(cmp == 0) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+//// Return index of user from an ID
+int get_index_from_id(char id[8]) {
+    load_data();
+    int total_data = count_data();
+    int i;
+    for(i=0;i<total_data;i++) {
+        int cmp = strcmp(info[i].id,id);
+        if(cmp == 0) {
+            return info[i].index;
+        }
+    }
+    return -1;
+}
+
+////////////////////////////////////////////////
+////       END OF UTILITIES FUNCTION        ////
+////////////////////////////////////////////////
+
+////////////////////////////////////////////////
+////          REGISTRATION FUNCTION         ////
+////////////////////////////////////////////////
 ////   WRITE Data to file
 int regis_to_file(char id[8],char firstname[30],char lastname[30],char phone[11],char email[100],char password[20]) {
     FILE *fp;
@@ -197,27 +313,13 @@ void registration()
     mainmenu();
 }
 
+////////////////////////////////////////////////
+////    END OF REGISTRATION FUNCTION        ////
+////////////////////////////////////////////////
+
 ////////////////////////////////////////////////////////
 //                     LOGIN                          //
 ////////////////////////////////////////////////////////
-
-int load_data() {
-    int i=0;
-    FILE *fp;
-    int data = count_data();
-
-    fp = fopen("data.txt", "r");
-    char buffer[255];
-
-    while (fgets(buffer, 255, fp) != NULL) {
-    //printf("%s", buffer);
-    sscanf(buffer,"%d,%[^,],%[^,],%[^,],%10[^,],%[^,],%[^,],",&info[i].index,info[i].id,info[i].firstname,info[i].lastname,info[i].phone,info[i].email,info[i].password);
-    i++;
-    }
-
-    fclose(fp);
-    return 0;
-}
 
 void set_session(int index,char id[8],char firstname[30],char lastname[30],char phone[11],char email[100],char password[20]) {
     login_session.index = index;
@@ -249,21 +351,6 @@ int check_pass(char id[8],char pass[20]) {
     return 1;
 }
 
-int check_role(char id[]) {
-    int size = strlen(id);
-    int i=0;
-    char tmp[size];
-    while(id[i] != '\0') {
-        tmp[i] = id[i];
-        i++;
-    }
-    if(tmp[0] == '0' && tmp[1] == '0') {
-        return 1;
-    } else {
-        return 0;
-    }
-}
-
 void login()
 {
     char id[8],password[20];
@@ -273,7 +360,7 @@ void login()
     scanf("%s",password);
     int status_check = check_pass(id,password);
     if (status_check == 0) {
-        printf("Logged in!!\n");
+        //printf("Logged in!!\n");
         if(check_role(id) == 1) {
             system("cls");
             printf("[INFO] Now you are logged in as a admin in the system.\n");
@@ -296,73 +383,36 @@ void login()
     }
 }
 
-void exitout()
-{
-    printf("**************        *****           *****       *****************\n");
-    printf("***************        *****         *****        *****************\n");
-    printf("****        ****        *****       *****         *****************\n");
-    printf("****        ****         *****     *****          ******\n");
-    printf("****        ****          *****   *****           ******\n");
-    printf("****        ****           ***** *****            ******\n");
-    printf("***************             *********             *****************\n");
-    printf("***************             *********             *****************\n");
-    printf("****        ****            *********             ******\n");
-    printf("****        ****            *********             ******\n");
-    printf("****        ****            *********             ******\n");
-    printf("****        ****            *********             *****************\n");
-    printf("***************             *********             *****************\n");
-    printf("**************              *********             *****************\n");
-}
-//////////////////////////////////
+////////////////////////////////////////////////////////
+//                END OF LOGIN                        //
+////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////
+//              ADMIN SECTION                       ////
+////////////////////////////////////////////////////////
 void admin_menu()
 {
-    int choice=11;
+    char choice;
     printf("[1] Edit User's Contact\n");
     printf("[2] Show all Contacts\n");
     printf("[3] Search for a Contact\n");
     printf("[4] Delete User's Contact\n");
     printf("[0] Log out\n");
     printf("Please enter the choice : ");
-    scanf("%d",&choice);
-    if(choice == 1){
+    scanf(" %c",&choice);
+    if(choice == '1'){
         system("cls");
         edit_userinfo();
-    } else if (choice == 2) {
+    } else if (choice == '2') {
         system("cls");
         showall_contact(1);
-    } else if (choice == 3) {
+    } else if (choice == '3') {
         system("cls");
         search_contact(1);
-    } else if (choice == 4) {
+    } else if (choice == '4') {
         system("cls");
         delete_menu();
-    } else if (choice == 0) {
-        system("cls");
-        syslogout();
-    } else {
-        system("cls");
-        student_menu();
-    }
-}
-void student_menu()
-{
-    int choice=11;
-    printf("[1] Edit My Contact Information\n");
-    printf("[2] Show all Contacts\n");
-    printf("[3] Search for a Contact\n");
-    printf("[0] Log out\n");
-    printf("Please enter the choice : ");
-    scanf("%d",&choice);
-    if(choice == 1){
-        system("cls");
-        edit_myinfo();
-    } else if (choice == 2) {
-        system("cls");
-        showall_contact(0);
-    } else if (choice == 3) {
-        system("cls");
-        search_contact(0);
-    } else if (choice == 0) {
+    } else if (choice == '0') {
         system("cls");
         syslogout();
     } else {
@@ -371,8 +421,316 @@ void student_menu()
     }
 }
 
+void edit_userinfo() {
+    char edit_id[8];
+    char choice;
+    char tmp[100];
+    int edit_stat;
+    printf("[Edit User's Contact]\n\n");
+    printf("[ADMIN] ID: %s\n\n",login_session.id);
+    printf("Please enter the id for editing: ");
+    scanf("%s", edit_id);
+    int check_id = check_user_exists(edit_id);
+    while(check_id == 0) {
+        printf("[ERROR] There is no matched id in the system.\n");
+        printf("[Re-Type] Please enter the id for editing:");
+        scanf("%s",edit_id);
+        check_id = check_user_exists(edit_id);
+    }
+    int edit_index = get_index_from_id(edit_id);
+    char pass_censored[20]="\0";
+    int i;
+    printf("[STUDENT] ID : %s\n\n",info[edit_index].id);
+    printf("[Existing Information]\n");
+    printf("First name: %s\n",info[edit_index].firstname);
+    printf("Last name: %s\n",info[edit_index].lastname);
+    printf("Phone number: %s\n",info[edit_index].phone);
+    printf("Email: %s\n",info[edit_index].email);
+    strncpy(pass_censored, info[edit_index].password, 5);
+    printf("Password: %s",pass_censored);
+    for(i=5;i<strlen(info[edit_index].password);i++) {
+        printf("*");
+    }
+    printf("\n\n");
+
+    printf("[1] First Name\n");
+    printf("[2] Last Name\n");
+    printf("[3] Phone Number\n");
+    printf("[4] Email\n");
+    printf("[5] Password\n");
+    printf("[0] Cancel\n");
+    printf("Please enter the choice to edit:");
+    scanf(" %c",&choice);
+    if(choice == '1') {
+        printf("[Re-input] Firstname : ");
+        scanf("%s",tmp);
+        edit_stat = edit_data(edit_index,"firstname",tmp);
+        if(edit_stat != 0) {
+            printf("\nError! Can't edit data\n");
+        }
+        admin_menu();
+    } else if(choice == '2') {
+        printf("[Re-input] Lastname : ");
+        scanf("%s",tmp);
+        edit_stat = edit_data(edit_index,"lastname",tmp);
+        if(edit_stat != 0) {
+            printf("\nError! Can't edit data\n");
+        }
+        admin_menu();
+    } else if (choice == '3') {
+        printf("[Re-input] Phone number : ");
+        scanf("%s",tmp);
+        while(strlen(tmp) != 10 || isallnum(tmp) == 0) {
+        printf("[ERROR] You must use only 10 digit numbers for phone number\n");
+        printf("[Re-input] Phone number : ");
+        scanf("%s",tmp);
+        }
+        edit_stat = edit_data(edit_index,"phone",tmp);
+        if(edit_stat != 0) {
+            printf("\nError! Can't edit data\n");
+        }
+        admin_menu();
+    } else if (choice == '4') {
+        printf("[Re-input] Email : ");
+        scanf("%s",tmp);
+        while(is_email(tmp) == 0) {
+        printf("[ERROR] You must contain character @\n");
+        printf("[Re-type] Email: ");
+        scanf("%s",tmp);
+        }
+        edit_stat = edit_data(edit_index,"email",tmp);
+        if(edit_stat != 0) {
+            printf("\nError! Can't edit data\n");
+        }
+        admin_menu();
+    } else if (choice == '5') {
+        printf("[Re-input] Password : ");
+        scanf("%s",tmp);
+        while(strlen(tmp) < 8) {
+        printf("[ERROR] You must use at least 8 characters for password\n");
+        printf("[Re-type] Password: ");
+        scanf("%s",tmp);
+        }
+        edit_stat = edit_data(edit_index,"password",tmp);
+        if(edit_stat != 0) {
+            printf("\nError! Can't edit data\n");
+        }
+        admin_menu();
+    } else if (choice == '0') {
+        admin_menu();
+    } else {
+        admin_menu();
+    }
+}
+
+void delete_menu() {
+    char usrdel[8];
+    char choice;
+    printf("[Delete User's Contact]\n");
+    printf("[ADMIN] ID: %s\n\n",login_session.id);
+    printf("Please enter the id for deleting: ");
+    scanf("%s",usrdel);
+    while(check_user_exists(usrdel) == 0) {
+        printf("User nor found!\n");
+        printf("Please enter the id for deleting: ");
+        scanf("%s",usrdel);
+    }
+    while(strcmp(usrdel,login_session.id) == 0)
+    {
+        printf("You can't delete yourself!\n");
+        printf("Please enter the id for deleting: ");
+        scanf("%s",usrdel);
+    }
+    int delindex = get_index_from_id(usrdel);
+    printf("[STUDENT]\nID : %s\n\n",info[delindex].id);
+    printf("First name: %s\n",info[delindex].firstname);
+    printf("Last name: %s\n",info[delindex].lastname);
+    printf("Phone number: %s\n",info[delindex].phone);
+    printf("Email: %s\n",info[delindex].email);
+
+    printf("\nDo you want to delete this contact information? [y/n]:");
+    scanf(" %c",&choice);
+    while(choice != 'y' || choice != 'Y' || choice != 'n' || choice != 'N') {
+        if(choice == 'y' || choice == 'Y' || choice == 'n' || choice == 'N') {
+            break;
+        } else {
+        printf("\nDo you want to delete this contact information? [y/n]:");
+        scanf(" %c",&choice);
+        }
+    }
+    if(choice == 'y' || choice == 'Y') {
+        if(delete_user(usrdel) == 0) {
+            printf("\nDelete this user succesfully!");
+            load_data();
+            printf("\nPress ENTER to back to menu");
+            char c;
+            getchar();
+            c = getchar();
+            if(c != NULL) {
+                system("cls");
+                admin_menu();
+            }
+        }
+    } else if (choice == 'n' || choice == 'N') {
+        system("cls");
+        delete_menu();
+    } else {
+        system("cls");
+        delete_menu();
+    }
+
+}
+
+////////////////////////////////////////////////////////
+//              END OF ADMIN SECTION                ////
+////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////
+//                STUDENT SECTION                   ////
+////////////////////////////////////////////////////////
+void student_menu()
+{
+    char choice;
+    printf("[1] Edit My Contact Information\n");
+    printf("[2] Show all Contacts\n");
+    printf("[3] Search for a Contact\n");
+    printf("[0] Log out\n");
+    printf("Please enter the choice : ");
+    scanf(" %c",&choice);
+    if(choice == '1'){
+        system("cls");
+        edit_myinfo();
+    } else if (choice == '2') {
+        system("cls");
+        showall_contact(0);
+    } else if (choice == '3') {
+        system("cls");
+        search_contact(0);
+    } else if (choice == '0') {
+        system("cls");
+        syslogout();
+    } else {
+        system("cls");
+        student_menu();
+    }
+}
+
+void edit_myinfo() {
+    char choice;
+    int edit_stat;
+    char tmp[100];
+    char pass_censored[20]="\0";
+    char confirm_pass[20];
+    int i;
+    printf("[Edit My Contact Information]\n\n");
+    printf("[STUDENT] ID : %s\n\n",login_session.id);
+    printf("[Existing Information]\n");
+    printf("First name: %s\n",login_session.firstname);
+    printf("Last name: %s\n",login_session.lastname);
+    printf("Phone number: %s\n",login_session.phone);
+    printf("Email: %s\n",login_session.email);
+    strncpy(pass_censored, login_session.password, 5);
+    printf("Password: %s",pass_censored);
+    for(i=5;i<strlen(login_session.password);i++) {
+        printf("*");
+    }
+    printf("\n\n");
+    printf("[1] First Name\n");
+    printf("[2] Last Name\n");
+    printf("[3] Phone Number\n");
+    printf("[4] Email\n");
+    printf("[5] Password\n");
+    printf("[0] Cancel\n");
+    printf("Please enter the choice to edit:");
+    scanf(" %c",&choice);
+    if(choice == '1') {
+        printf("[Re-input] Firstname : ");
+        scanf("%s",tmp);
+        edit_stat = edit_data(login_session.index,"firstname",tmp);
+        if(edit_stat != 0) {
+            printf("\nError! Can't edit data\n");
+        }
+        strcpy(login_session.firstname,tmp);
+        system("cls");
+        student_menu();
+    } else if(choice == '2') {
+        printf("[Re-input] Lastname : ");
+        scanf("%s",tmp);
+        edit_stat = edit_data(login_session.index,"lastname",tmp);
+        if(edit_stat != 0) {
+            printf("\nError! Can't edit data\n");
+        }
+        strcpy(login_session.lastname,tmp);
+        system("cls");
+        student_menu();
+    } else if (choice == '3') {
+        printf("[Re-input] Phone number : ");
+        scanf("%s",tmp);
+        while(strlen(tmp) != 10 || isallnum(tmp) == 0) {
+        printf("[ERROR] You must use only 10 digit numbers for phone number\n");
+        printf("[Re-input] Phone number : ");
+        scanf("%s",tmp);
+        }
+        edit_stat = edit_data(login_session.index,"phone",tmp);
+        if(edit_stat != 0) {
+            printf("\nError! Can't edit data\n");
+        }
+        strcpy(login_session.phone,tmp);
+        system("cls");
+        student_menu();
+    } else if (choice == '4') {
+        printf("[Re-input] Email : ");
+        scanf("%s",tmp);
+        while(is_email(tmp) == 0) {
+        printf("[ERROR] You must contain character @\n");
+        printf("[Re-type] Email: ");
+        scanf("%s",tmp);
+        }
+        edit_stat = edit_data(login_session.index,"email",tmp);
+        if(edit_stat != 0) {
+            printf("\nError! Can't edit data\n");
+        }
+        strcpy(login_session.email,tmp);
+        system("cls");
+        student_menu();
+    } else if (choice == '5') {
+        printf("[Re-input] Password : ");
+        scanf("%s",tmp);
+        while(strlen(tmp) < 8) {
+        printf("[ERROR] You must use at least 8 characters for password\n");
+        printf("[Re-type] Password: ");
+        scanf("%s",tmp);
+        }
+        printf("Confirmed Password : ");
+        scanf("%s",confirm_pass);
+        while(strcmp(tmp,confirm_pass) != 0)
+        {
+        printf("[ERROR] These passwords don't match\n");
+        printf("[Re-type] Confirmed Password:");
+        scanf("%s",confirm_pass);
+        }
+        edit_stat = edit_data(login_session.index,"password",tmp);
+        if(edit_stat != 0) {
+            printf("\nError! Can't edit data\n");
+        }
+        strcpy(login_session.password,tmp);
+        system("cls");
+        student_menu();
+    } else if (choice == '0') {
+        system("cls");
+        student_menu();
+    } else {
+        system("cls");
+        student_menu();
+    }
+}
+
+////////////////////////////////////////////////////////
+//                END OF STUDENT SECTION            ////
+////////////////////////////////////////////////////////
+
 ///////////////////////////////////////////////////////////////
-////                    EDIT DATA                          ////
+////                   DATA MANAGEMENT                     ////
 ///////////////////////////////////////////////////////////////
 
 //to write data after edited to new file and remove old file
@@ -423,116 +781,6 @@ int edit_data(int index,char column[],char newdata[]) {
     }
 }
 
-void edit_myinfo() {
-    int choice;
-    int edit_stat;
-    char tmp[100];
-    char pass_censored[20]="\0";
-    char confirm_pass[20];
-    int i;
-    printf("[Edit My Contact Information]\n\n");
-    printf("[STUDENT] ID : %s\n\n",login_session.id);
-    printf("[Existing Information]\n");
-    printf("First name: %s\n",login_session.firstname);
-    printf("Last name: %s\n",login_session.lastname);
-    printf("Phone number: %s\n",login_session.phone);
-    printf("Email: %s\n",login_session.email);
-    strncpy(pass_censored, login_session.password, 5);
-    printf("Password: %s",pass_censored);
-    for(i=5;i<strlen(login_session.password);i++) {
-        printf("*");
-    }
-    printf("\n\n");
-    printf("[1] First Name\n");
-    printf("[2] Last Name\n");
-    printf("[3] Phone Number\n");
-    printf("[4] Email\n");
-    printf("[5] Password\n");
-    printf("[0] Cancel\n");
-    printf("Please enter the choice to edit:");
-    scanf("%d",&choice);
-    if(choice == 1) {
-        printf("[Re-input] Firstname : ");
-        scanf("%s",tmp);
-        edit_stat = edit_data(login_session.index,"firstname",tmp);
-        if(edit_stat != 0) {
-            printf("\nError! Can't edit data\n");
-        }
-        strcpy(login_session.firstname,tmp);
-        system("cls");
-        student_menu();
-    } else if(choice == 2) {
-        printf("[Re-input] Lastname : ");
-        scanf("%s",tmp);
-        edit_stat = edit_data(login_session.index,"lastname",tmp);
-        if(edit_stat != 0) {
-            printf("\nError! Can't edit data\n");
-        }
-        strcpy(login_session.lastname,tmp);
-        system("cls");
-        student_menu();
-    } else if (choice == 3) {
-        printf("[Re-input] Phone number : ");
-        scanf("%s",tmp);
-        while(strlen(tmp) != 10 || isallnum(tmp) == 0) {
-        printf("[ERROR] You must use only 10 digit numbers for phone number\n");
-        printf("[Re-input] Phone number : ");
-        scanf("%s",tmp);
-        }
-        edit_stat = edit_data(login_session.index,"phone",tmp);
-        if(edit_stat != 0) {
-            printf("\nError! Can't edit data\n");
-        }
-        strcpy(login_session.phone,tmp);
-        system("cls");
-        student_menu();
-    } else if (choice == 4) {
-        printf("[Re-input] Email : ");
-        scanf("%s",tmp);
-        while(is_email(tmp) == 0) {
-        printf("[ERROR] You must contain character @\n");
-        printf("[Re-type] Email: ");
-        scanf("%s",tmp);
-        }
-        edit_stat = edit_data(login_session.index,"email",tmp);
-        if(edit_stat != 0) {
-            printf("\nError! Can't edit data\n");
-        }
-        strcpy(login_session.email,tmp);
-        system("cls");
-        student_menu();
-    } else if (choice == 5) {
-        printf("[Re-input] Password : ");
-        scanf("%s",tmp);
-        while(strlen(tmp) < 8) {
-        printf("[ERROR] You must use at least 8 characters for password\n");
-        printf("[Re-type] Password: ");
-        scanf("%s",tmp);
-        }
-        printf("Confirmed Password : ");
-        scanf("%s",confirm_pass);
-        while(strcmp(tmp,confirm_pass) != 0)
-        {
-        printf("[ERROR] These passwords don't match\n");
-        printf("[Re-type] Confirmed Password:");
-        scanf("%s",confirm_pass);
-        }
-        edit_stat = edit_data(login_session.index,"password",tmp);
-        if(edit_stat != 0) {
-            printf("\nError! Can't edit data\n");
-        }
-        strcpy(login_session.password,tmp);
-        system("cls");
-        student_menu();
-    } else if (choice == 0) {
-        system("cls");
-        student_menu();
-    } else {
-        system("cls");
-        student_menu();
-    }
-}
-
 void showall_contact(int role) {
     int i=0;
     load_data();
@@ -570,7 +818,7 @@ void showall_contact(int role) {
     }
 }
 
-void search_contact(int role) // á¡éºÑ¤
+void search_contact(int role)
 {
     int i,check=0;
     char find[20];
@@ -647,211 +895,6 @@ int check_contact(char find[],int role)
     }
 }
 
-void syslogout() {
-    login_session.index = 999;
-    strcpy(login_session.id,"\0");
-    strcpy(login_session.firstname,"\0");
-    strcpy(login_session.lastname,"\0");
-    strcpy(login_session.phone,"\0");
-    strcpy(login_session.email,"\0");
-    strcpy(login_session.password,"\0");
-    /*printf("%d\n",login_session.index);
-    printf("%s\n",login_session.id);
-    printf("%s\n",login_session.firstname);
-    printf("%s\n",login_session.lastname);
-    printf("%s\n",login_session.phone);
-    printf("%s\n",login_session.email);
-    printf("%s\n",login_session.password);*/
-    printf("Logged out!\n\n");
-    mainmenu();
-}
-
-int check_user_exists(char id[8]) {
-    load_data();
-    int total_data = count_data();
-    int i;
-    for(i=0;i<total_data;i++) {
-        int cmp = strcmp(id,info[i].id);
-        if(cmp == 0) {
-            return 1;
-        }
-    }
-    return 0;
-}
-
-int get_index_from_id(char id[8]) {
-    load_data();
-    int total_data = count_data();
-    int i;
-    for(i=0;i<total_data;i++) {
-        int cmp = strcmp(info[i].id,id);
-        if(cmp == 0) {
-            return info[i].index;
-        }
-    }
-    return -1;
-}
-
-void edit_userinfo() {
-    char edit_id[8];
-    int choice;
-    char tmp[100];
-    int edit_stat;
-    printf("[Edit User's Contact]\n\n");
-    printf("[ADMIN] ID: %s\n\n",login_session.id);
-    printf("Please enter the id for editing: ");
-    scanf("%s", edit_id);
-    int check_id = check_user_exists(edit_id);
-    while(check_id == 0) {
-        printf("[ERROR] There is no matched id in the system.\n");
-        printf("[Re-Type] Please enter the id for editing:");
-        scanf("%s",edit_id);
-        check_id = check_user_exists(edit_id);
-    }
-    int edit_index = get_index_from_id(edit_id);
-    char pass_censored[20]="\0";
-    int i;
-    printf("[STUDENT] ID : %s\n\n",info[edit_index].id);
-    printf("[Existing Information]\n");
-    printf("First name: %s\n",info[edit_index].firstname);
-    printf("Last name: %s\n",info[edit_index].lastname);
-    printf("Phone number: %s\n",info[edit_index].phone);
-    printf("Email: %s\n",info[edit_index].email);
-    strncpy(pass_censored, info[edit_index].password, 5);
-    printf("Password: %s",pass_censored);
-    for(i=5;i<strlen(info[edit_index].password);i++) {
-        printf("*");
-    }
-    printf("\n\n");
-
-    printf("[1] First Name\n");
-    printf("[2] Last Name\n");
-    printf("[3] Phone Number\n");
-    printf("[4] Email\n");
-    printf("[5] Password\n");
-    printf("[0] Cancel\n");
-    printf("Please enter the choice to edit:");
-    scanf("%d",&choice);
-    if(choice == 1) {
-        printf("[Re-input] Firstname : ");
-        scanf("%s",tmp);
-        edit_stat = edit_data(edit_index,"firstname",tmp);
-        if(edit_stat != 0) {
-            printf("\nError! Can't edit data\n");
-        }
-        admin_menu();
-    } else if(choice == 2) {
-        printf("[Re-input] Lastname : ");
-        scanf("%s",tmp);
-        edit_stat = edit_data(edit_index,"lastname",tmp);
-        if(edit_stat != 0) {
-            printf("\nError! Can't edit data\n");
-        }
-        admin_menu();
-    } else if (choice == 3) {
-        printf("[Re-input] Phone number : ");
-        scanf("%s",tmp);
-        while(strlen(tmp) != 10 || isallnum(tmp) == 0) {
-        printf("[ERROR] You must use only 10 digit numbers for phone number\n");
-        printf("[Re-input] Phone number : ");
-        scanf("%s",tmp);
-        }
-        edit_stat = edit_data(edit_index,"phone",tmp);
-        if(edit_stat != 0) {
-            printf("\nError! Can't edit data\n");
-        }
-        admin_menu();
-    } else if (choice == 4) {
-        printf("[Re-input] Email : ");
-        scanf("%s",tmp);
-        while(is_email(tmp) == 0) {
-        printf("[ERROR] You must contain character @\n");
-        printf("[Re-type] Email: ");
-        scanf("%s",tmp);
-        }
-        edit_stat = edit_data(edit_index,"email",tmp);
-        if(edit_stat != 0) {
-            printf("\nError! Can't edit data\n");
-        }
-        admin_menu();
-    } else if (choice == 5) {
-        printf("[Re-input] Password : ");
-        scanf("%s",tmp);
-        while(strlen(tmp) < 8) {
-        printf("[ERROR] You must use at least 8 characters for password\n");
-        printf("[Re-type] Password: ");
-        scanf("%s",tmp);
-        }
-        edit_stat = edit_data(edit_index,"password",tmp);
-        if(edit_stat != 0) {
-            printf("\nError! Can't edit data\n");
-        }
-        admin_menu();
-    } else if (choice == 0) {
-        admin_menu();
-    } else {
-        admin_menu();
-    }
-}
-
-void delete_menu() {
-    char usrdel[8];
-    char choice;
-    printf("[Delete User's Contact]\n");
-    printf("[ADMIN] ID: %s\n\n",login_session.id);
-    printf("Please enter the id for deleting: ");
-    scanf("%s",usrdel);
-    while(check_user_exists(usrdel) == 0) {
-        printf("User nor found!\n");
-        printf("Please enter the id for deleting: ");
-        scanf("%s",usrdel);
-    }
-    while(strcmp(usrdel,login_session.id) == 0)
-    {
-        printf("You can't delete yourself!\n");
-        printf("Please enter the id for deleting: ");
-        scanf("%s",usrdel);
-    }
-    int delindex = get_index_from_id(usrdel);
-    printf("[STUDENT]\nID : %s\n\n",info[delindex].id);
-    printf("First name: %s\n",info[delindex].firstname);
-    printf("Last name: %s\n",info[delindex].lastname);
-    printf("Phone number: %s\n",info[delindex].phone);
-    printf("Email: %s\n",info[delindex].email);
-
-    printf("\nDo you want to delete this contact information? [y/n]:");
-    scanf(" %c",&choice);
-    while(choice != 'y' || choice != 'Y' || choice != 'n' || choice != 'N') {
-        if(choice == 'y' || choice == 'Y' || choice == 'n' || choice == 'N') {
-            break;
-        } else {
-        printf("\nDo you want to delete this contact information? [y/n]:");
-        scanf(" %c",&choice);
-        }
-    }
-    if(choice == 'y' || choice == 'Y') {
-        if(delete_user(usrdel) == 0) {
-            printf("\nDelete this user succesfully!");
-            load_data();
-            printf("\nPress ENTER to back to menu");
-            char c;
-            getchar();
-            c = getchar();
-            if(c != NULL) {
-                system("cls");
-                admin_menu();
-            }
-        }
-    } else if (choice == 'n' || choice == 'N') {
-        system("cls");
-        delete_menu();
-    } else {
-        system("cls");
-        delete_menu();
-    }
-
-}
-
 void delete_user(char id[]) {
     int i;
     int data = count_data();
@@ -891,7 +934,14 @@ void delete_user(char id[]) {
         return 1;
     }
 }
-///////// HERE IS EXTRA FEATURE - FORGET PASSWORD ! - ////////////
+
+///////////////////////////////////////////////////////////////
+////               END OF DATA MANAGEMENT                  ////
+///////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////
+////            EXTRA FEATUEES - FORGOT PASSWORD           ////
+///////////////////////////////////////////////////////////////
 void forget_pass()
 {
     struct card forgotpass;
@@ -967,6 +1017,10 @@ void forget_pass()
         }
     }
 }
+
+///////////////////////////////////////////////////////////////
+////       END OF EXTRA FEATUEES - FORGOT PASSWORD         ////
+///////////////////////////////////////////////////////////////
 
 int main() {
     mainmenu();
